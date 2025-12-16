@@ -178,7 +178,7 @@ let addCollection;
 async function run() {
   try {
     // ✅ MongoDB connect
-    await client.connect();
+    // await client.connect();
     console.log('✅ Connected to MongoDB');
 
     const db = client.db('Personal_Finance_Management_App');

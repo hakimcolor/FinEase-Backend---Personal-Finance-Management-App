@@ -32,7 +32,47 @@ async function run() {
     const db = client.db('Personal_Finance_Management_App');
     const addCollection = db.collection('add');
     const userCollection = db.collection('user');
-    
+
+    // GET overview (total income, expense, balance)
+    app.get('/transactions/overview', async (req, res) => {
+      try {
+        const email = req.query.email;
+        if (!email) {
+          return res.status(400).send({ message: 'Email is required' });
+        }
+
+        const result = await addCollection
+          .aggregate([
+            { $match: { email } },
+            {
+              $group: {
+                _id: '$type',
+                total: { $sum: '$amount' },
+              },
+            },
+          ])
+          .toArray();
+
+        let totalIncome = 0;
+        let totalExpense = 0;
+
+        result.forEach((item) => {
+          if (item._id === 'income') totalIncome = item.total;
+          if (item._id === 'expense') totalExpense = item.total;
+        });
+
+        const balance = totalIncome - totalExpense;
+
+        res.send({
+          totalIncome,
+          totalExpense,
+          balance,
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Server error' });
+      }
+    });
 
     // GET user by email
     app.get('/users/by-email', async (req, res) => {
@@ -89,7 +129,7 @@ async function run() {
           });
         }
 
-        // Create new user
+        
         const newUser = {
           firstName,
           email,

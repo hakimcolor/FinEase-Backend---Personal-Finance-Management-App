@@ -294,7 +294,6 @@ const client = new MongoClient(uri, {
 // Async function to connect to MongoDB
 async function run() {
   try {
-  
     console.log('✅ Connected to MongoDB');
 
     const db = client.db('Personal_Finance_Management_App');
@@ -355,7 +354,26 @@ async function run() {
         res.status(500).send({ message: 'Server error' });
       }
     });
+    // GET total by category
+    app.get('/transactions/category-total', async (req, res) => {
+      try {
+        const email = req.query.email;
+        if (!email)
+          return res.status(400).send({ message: 'Email is required' });
 
+        const totals = await addCollection
+          .aggregate([
+            { $match: { email } },
+            { $group: { _id: '$category', total: { $sum: '$amount' } } },
+          ])
+          .toArray();
+
+        res.send(totals);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: 'Server error' });
+      }
+    });
     // GET transaction by ID
     app.get('/transactions/:id', async (req, res) => {
       try {
@@ -434,27 +452,6 @@ async function run() {
       } catch (error) {
         console.error(error);
         res.status(400).send({ message: 'Invalid ID' });
-      }
-    });
-
-    // GET total by category
-    app.get('/transactions/category-total', async (req, res) => {
-      try {
-        const email = req.query.email;
-        if (!email)
-          return res.status(400).send({ message: 'Email is required' });
-
-        const totals = await addCollection
-          .aggregate([
-            { $match: { email } },
-            { $group: { _id: '$category', total: { $sum: '$amount' } } },
-          ])
-          .toArray();
-
-        res.send(totals);
-      } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: 'Server error' });
       }
     });
 

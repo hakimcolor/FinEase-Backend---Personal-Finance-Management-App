@@ -65,7 +65,7 @@ async function run() {
       }
     });
 
-    // GET all transactions by user email
+    // GET all transactions by user emailk
     app.get('/transactions', async (req, res) => {
       try {
         const email = req.query.email;
